@@ -1,0 +1,29 @@
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: 0.0.0.0:4318
+
+exporters:
+  otlphttp/tempo:
+    endpoint: http://tempo:4318
+  prometheusremotewrite:
+    endpoint: http://prometheus:9090/api/v1/write
+  debug:
+    verbosity: basic
+
+processors:
+  batch:
+    timeout: 1s
+    send_batch_size: 512
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [otlphttp/tempo, debug]
+    metrics:
+      receivers: [otlp]
+      processors: [batch]
+      exporters: [prometheusremotewrite, debug]
